@@ -27,13 +27,16 @@ class BaseConfig(object):
             
       for (key, value) in config.__dict__.items():
         
-        attr_type = type(getattr(config, key)).__name__
-        name = parent_prefix + key
-        #print attr_type
-        if attr_type in ('int', 'bool', 'str'):
-          logger.debug('%s=%s' % ( name, str(value)))
+        if value != None:
+          attr_type = type(getattr(config, key)).__name__
+          name = parent_prefix + key
+          #print attr_type
+          if attr_type in ('int', 'bool', 'str'):
+            logger.debug('%s=%s' % ( name, str(value)))
+          else:
+            self._dump(value, name + '.')
         else:
-          self._dump(value, name + '.')
+          logger.debug("%s=None" % key)
 
 class ConfigHandler(object):
   

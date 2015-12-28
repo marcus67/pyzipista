@@ -1,0 +1,22 @@
+# This is a sample configuration file for using pyzipista. Copy this file as pyzipista_config
+# into the directory tree of your application and make the appropriate changes.
+# Then create a Pythonista action short cut to pyzipista.py with the new configuration file as 
+# the only parameter. Make sure you use the relative filename of the configuration file with respect
+# to pyzipista.py.
+
+[general]
+
+# The logical name of the application. This will appear in the generated Python file. It not
+# provided it will default to the app_directory (see below).
+name = APPNAME
+
+# The name of the physical sub directory of the Pythonista directory that your application is located in.
+# Make sure not to use any leading slashes.
+app_directory = pyzipista
+
+# The URL of your application (e.g. on GitHub). This will be included in the generated Python file.
+app_url = https://github.com/marcus67/pyzipista
+
+# Relative path name of the generated Python file with respects to the app_directory.
+zip_filename = build/pyzipista_zip.py
+
