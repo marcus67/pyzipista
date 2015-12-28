@@ -4,7 +4,7 @@ epoch_delta = 3600
 
 [repository]
 
-name = gitsynchista
-local_path = .
-remote_path = /gitsynchista
+name = pyzipista
+local_path = ../pyzipista
+remote_path = /pyzipista
 
