@@ -29,7 +29,9 @@ APP_NAME_PLACEHOLDER = '[APPNAME]'
 APP_URL_PLACEHOLDER = '[APPURL]'
 GIT_IGNORE_FILE = '.gitignore'
 GITSYNCHISTA_IGNORE_FILE = 'gitsynchista_ignore'
+GITSYNCHISTA_IGNORE_FILE_2 = 'gitsynchista_ignore.txt'
 PYZIPISTA_IGNORE_FILE = 'pyzipista_ignore'
+PYZIPISTA_IGNORE_FILE_2 = 'pyzipista_ignore.txt'
 
 ADDITIONAL_IGNORE_PATTERNS = '|\..*'
 
@@ -55,13 +57,21 @@ class IgnoreInfo(object):
     
     global logger
     
-    pattern_string = ('^' + file_string.replace('.','\.').replace('*', '.*').replace('\n','$|^') + '$').replace('|^$', '') + ADDITIONAL_IGNORE_PATTERNS
-    logger.info("Created IgnoreInfo with pattern regex '%s'" % pattern_string)
-    self.regex = re.compile(pattern_string)        
+    if len(file_string) > 0:
+      pattern_string = ('^' + file_string.replace('.','\.').replace('*', '.*').replace('\n','$|^') + '$').replace('|^$', '')
+      logger.info("Created IgnoreInfo with pattern regex '%s'" % pattern_string)
+      self.regex = re.compile(pattern_string)     
+    else:
+      self.regex = None   
     
   def is_ignored(self, name):
     
-    return self.regex.match(name) != None
+    if self.regex:
+      return self.regex.match(name) != None
+    else:
+      return False
+    
+global_ignore_info = IgnoreInfo(ADDITIONAL_IGNORE_PATTERNS)
     
 class FileAccess(object):
   
@@ -77,10 +87,12 @@ class FileAccess(object):
     files = []
     github_ignore_info = self.load_ignore_info(os.path.join(base_path, GIT_IGNORE_FILE))
     gitsynchista_ignore_info = self.load_ignore_info(os.path.join(base_path, GITSYNCHISTA_IGNORE_FILE))
+    gitsynchista_ignore_info_2 = self.load_ignore_info(os.path.join(base_path, GITSYNCHISTA_IGNORE_FILE_2))
     pyzipista_ignore_info = self.load_ignore_info(os.path.join(base_path, PYZIPISTA_IGNORE_FILE))
+    pyzipista_ignore_info_2 = self.load_ignore_info(os.path.join(base_path, PYZIPISTA_IGNORE_FILE_2))
     
     for f in os.listdir(base_path):
-      is_ignored = parent_is_ignored or (github_ignore_info != None and github_ignore_info.is_ignored(f)) or (gitsynchista_ignore_info != None and gitsynchista_ignore_info.is_ignored(f)) or (pyzipista_ignore_info != None and pyzipista_ignore_info.is_ignored(f))
+      is_ignored = parent_is_ignored or github_ignore_info.is_ignored(f) or gitsynchista_ignore_info.is_ignored(f) or gitsynchista_ignore_info_2.is_ignored(f) or pyzipista_ignore_info.is_ignored(f) or pyzipista_ignore_info_2.is_ignored(f)
       path = os.path.join(base_path, f)
       attr = os.stat(path)
       isDirectory = os.path.isdir(path)
@@ -110,10 +122,8 @@ class FileAccess(object):
       ignore_patterns = self.load_into_string(ignore_file)
       logger.info("Loading ignore file '%s'" % ignore_file)    
       return IgnoreInfo(ignore_patterns)
-      
     else:
-      return None
-   
+      return IgnoreInfo('')   
   
 
 class ZipHandler(object):
