@@ -6,22 +6,19 @@ import re
 import base64
 import StringIO
 
+import log
 import config
 import zip_handler_config
 
+reload(log)
 reload(config)
 reload(zip_handler_config)
 
 global logger
 
-logger = logging.getLogger('pyzipista')  
-logger.handlers = []
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+
+
+logger = log.open_logging('pyzipista', reload=True)  
 
 UNZIP_TEMPLATE_FILE = 'etc/zip_template.py'
 BASE64_PLACEHOLDER = '[BASE64]'
@@ -186,6 +183,7 @@ def load_config_file_and_zip(config_filename):
   
   handler_config = None
   
+  logger.info("start aplication")
   try:
     config_handler = config.ConfigHandler(zip_handler_config.ZipHandlerConfig())
     handler_config = config_handler.read_config_file(config_filename)
@@ -203,6 +201,8 @@ def load_config_file_and_zip(config_filename):
   except Exception as e:
     
     logger.error("Error '%s' while writing zip file" % str(e))  
+    
+  logger.info("terminate application")
   
   
 

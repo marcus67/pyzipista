@@ -8,3 +8,5 @@ name = pyzipista
 local_path = ../pyzipista
 remote_path = /pyzipista
 
+auto_scan = 1
+#working_copy_wakeup = 1
