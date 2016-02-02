@@ -15,7 +15,7 @@ zip_string='''
 [BASE64]
 '''
 
-def main():
+def extract(path='.'):
 
   try:  
 
@@ -28,16 +28,19 @@ def main():
   
     zip_file.printdir()
     
-    print "Extracting ..."
+    print "Extracting to directory '%s'..." %path
     
-    zip_file.extractall()
+    zip_file.extractall(path=path)
     
-    print "All files successfully extracted into local directory."
+    print "All files successfully extracted into directory '%s'." % path
   
   except Exception as e:
     
     sys.stderr.write("ERROR '%s' while extracting files!" % str(e))
-    
+        
+def main():
+  extract('.')
+  
 if __name__ == '__main__':
   main()
   
