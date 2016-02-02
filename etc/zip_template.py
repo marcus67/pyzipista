@@ -10,10 +10,16 @@
 import zipfile
 import base64
 import StringIO
+import sys
+import os
 
 zip_string='''
 [BASE64]
 '''
+
+mod_times=[
+[MOD_TIMES]
+]
 
 def extract(path='.'):
 
@@ -33,10 +39,27 @@ def extract(path='.'):
     zip_file.extractall(path=path)
     
     print "All files successfully extracted into directory '%s'." % path
+    
   
   except Exception as e:
     
     sys.stderr.write("ERROR '%s' while extracting files!" % str(e))
+    return
+    
+  try:
+    
+    print "Setting modification times..."
+    
+    for (filename, epoch) in mod_times:
+      effective_path = os.path.join(path, filename)
+      os.utime(effective_path, (epoch, epoch))
+    
+    print "All timestamps successfully updated."
+
+  except Exception as e:
+    
+    sys.stderr.write("ERROR '%s' while updating modification times!" % str(e))
+    return
         
 def main():
   extract('.')

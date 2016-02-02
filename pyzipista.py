@@ -22,6 +22,7 @@ logger = log.open_logging('pyzipista', reload=True)
 
 UNZIP_TEMPLATE_FILE = 'etc/zip_template.py'
 BASE64_PLACEHOLDER = '[BASE64]'
+MOD_TIMES_PLACEHOLDER = '[MOD_TIMES]'
 APP_NAME_PLACEHOLDER = '[APPNAME]'
 APP_URL_PLACEHOLDER = '[APPURL]'
 GIT_IGNORE_FILE = '.gitignore'
@@ -34,11 +35,12 @@ ADDITIONAL_IGNORE_PATTERNS = '|\..*'
 
 class File(object):
   
-  def __init__(self, name, physical_name, base_name, is_ignored=False):
+  def __init__(self, name, physical_name, base_name, modification_time, is_ignored=False):
     
     self.name = name
     self.physical_name = physical_name
     self.base_name = base_name
+    self.modification_time = modification_time
     self.is_ignored = is_ignored
     
   def is_directory(self):
@@ -98,7 +100,8 @@ class FileAccess(object):
         files.extend(sub_files)
       else:
       
-        file = File(name=path.replace(self.root_path, '.', 1), physical_name=path, base_name=f, is_ignored=is_ignored)
+        file = File(name=path.replace(self.root_path, '.', 1), physical_name=path, base_name=f, is_ignored=is_ignored, modification_time=attr.st_mtime)
+        
         files.append(file)
     
     return files
@@ -154,11 +157,13 @@ class ZipHandler(object):
     zip_file.debug = 3
     
     count = 0
+    mod_times_string = ''
     for file in files:
       
       if not file.is_ignored:
         logger.debug("Adding file '%s' as '%s' to zip file" % ( file.physical_name, file.name ))
         zip_file.write(filename=file.physical_name, arcname=file.name)
+        mod_times_string = "%s\n( '%s' , %d ), " % (mod_times_string, file.name, file.modification_time)
         count = count + 1
         
     zip_file.close()
@@ -169,7 +174,7 @@ class ZipHandler(object):
     
     base64_string = base64.b64encode(binary_zip_string, '_&')
     unzip_template_file_as_string = file_access.load_into_string(UNZIP_TEMPLATE_FILE)    
-    unzip_file_as_string = unzip_template_file_as_string.replace(BASE64_PLACEHOLDER, base64_string).replace(APP_NAME_PLACEHOLDER, app_name).replace(APP_URL_PLACEHOLDER, app_url)
+    unzip_file_as_string = unzip_template_file_as_string.replace(BASE64_PLACEHOLDER, base64_string).replace(APP_NAME_PLACEHOLDER, app_name).replace(APP_URL_PLACEHOLDER, app_url).replace(MOD_TIMES_PLACEHOLDER, mod_times_string)
     
     zip_filename = os.path.join(self.config.general.root_path, self.config.general.app_directory, self.config.general.zip_filename)
     with open(zip_filename, "w") as unzip_file:
