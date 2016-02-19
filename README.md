@@ -1,4 +1,4 @@
-![gitsynchista icon](https://raw.githubusercontent.com/marcus67/pyzipista/master/lib/pyzipista_64x64.png)
+![pyzipista icon](https://raw.githubusercontent.com/marcus67/pyzipista/master/lib/pyzipista_64x64.png)
 
 # pyzipista
 Tool to create a self-extracting Pythonista application.
