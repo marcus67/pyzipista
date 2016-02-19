@@ -41,6 +41,11 @@
             "handlers": ["console", "file"],
             "propagate": 0
         },
+        "config": {
+            "level": "INFO",
+            "handlers": ["console", "file"],
+            "propagate": 0
+        },
         "__main__": {
             "level": "INFO",
             "handlers": ["console"],

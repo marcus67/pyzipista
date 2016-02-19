@@ -1,3 +1,6 @@
+# coding: utf-8
+# This file is part of https://github.com/marcus67/pyzipista
+
 import logging
 import sys
 import os
@@ -16,16 +19,16 @@ reload(zip_handler_config)
 
 global logger
 
-
-
 logger = log.open_logging('pyzipista', reload=True)  
 
-UNZIP_TEMPLATE_FILE = 'etc/zip_template.py'
+UNZIP_TEMPLATE_FILE = '../pyzipista/etc/zip_template.py'
 BASE64_PLACEHOLDER = '[BASE64]'
 MOD_TIMES_PLACEHOLDER = '[MOD_TIMES]'
 APP_NAME_PLACEHOLDER = '[APPNAME]'
 APP_URL_PLACEHOLDER = '[APPURL]'
 GIT_IGNORE_FILE = '.gitignore'
+PYZIPISTA_CONFIG_FILE = 'pyzipista_config'
+CONFIG_FILE_SEARCH_PATH = [ '.', 'etc' ]
 GITSYNCHISTA_IGNORE_FILE = 'gitsynchista_ignore'
 GITSYNCHISTA_IGNORE_FILE_2 = 'gitsynchista_ignore.txt'
 PYZIPISTA_IGNORE_FILE = 'pyzipista_ignore'
@@ -135,7 +138,38 @@ class ZipHandler(object):
     if self.config.general.app_directory == None:  
       raise Exception("ERROR: [general].app_directory not set in configuration file!")
     
+    
+  def get_latest_timestamp(self):
+    
+    global logger
+  
+    file_access = FileAccess(self.config.general.root_path)  
+    base_path = os.path.join(self.config.general.root_path, self.config.general.app_directory)
+    files = file_access.load_directory(base_path)
+    latest_timestamp = -1    
+    
+    for file in files:
+      if not file.is_ignored:
+        if file.modification_time > latest_timestamp:
+          latest_timestamp = file.modification_time
+
+    return latest_timestamp
+
       
+  def get_zip_filename(self):
+    return os.path.join(self.config.general.root_path, self.config.general.app_directory, self.config.general.zip_filename)
+    
+  def get_zip_timestamp(self):
+    zip_filename = self.get_zip_filename()
+    
+    if os.path.exists(zip_filename):
+      attr = os.stat(zip_filename)
+      return attr.st_mtime
+      
+    else:
+      return -1
+    
+    
   def create_zip_file(self):
     
     global logger
@@ -176,19 +210,48 @@ class ZipHandler(object):
     unzip_template_file_as_string = file_access.load_into_string(UNZIP_TEMPLATE_FILE)    
     unzip_file_as_string = unzip_template_file_as_string.replace(BASE64_PLACEHOLDER, base64_string).replace(APP_NAME_PLACEHOLDER, app_name).replace(APP_URL_PLACEHOLDER, app_url).replace(MOD_TIMES_PLACEHOLDER, mod_times_string)
     
-    zip_filename = os.path.join(self.config.general.root_path, self.config.general.app_directory, self.config.general.zip_filename)
+    zip_filename = self.get_zip_filename()
     with open(zip_filename, "w") as unzip_file:
       unzip_file.write(unzip_file_as_string)
     logger.info("Wrote self-extracting archive to '%s'" % zip_filename)
       
     
 def load_config_file_and_zip(config_filename):
+  global logger
+  
+  pyzipista_config = None
+  logger.info("Starting application for config %s", config_filename)
+  
+  try:
+    config_handler = config.ConfigHandler(zip_handler_config.ZipHandlerConfig())
+    pyzipista_config = config_handler.read_config_file(config_filename)
+  
+  except Exception as e:    
+    logger.exception("Error '%s' while reading configuration file %s" % (str(e), config_filename))  
+    
+  if not pyzipista_config:
+    logger.warn('Could not read config %s', config_filename)
+    
+  try:
+    pyzipista_config.dump()
+    zip_handler = ZipHandler(pyzipista_config)
+    zip_handler.create_zip_file()
+  
+  except Exception as e:
+    logger.exception("Error '%s' while writing zip file" % str(e))  
+    
+  logger.info("Terminating application")
+  
+  
+def load_config_file_and_check_zip_required(config_filename):
   
   global logger
   
+  latest_timestamp = None
   handler_config = None
+  zip_required = False
   
-  logger.info("start aplication")
+  logger.info("Start checking file status for '%s'" % config_filename)
   try:
     config_handler = config.ConfigHandler(zip_handler_config.ZipHandlerConfig())
     handler_config = config_handler.read_config_file(config_filename)
@@ -196,21 +259,23 @@ def load_config_file_and_zip(config_filename):
   except Exception as e:
     
     logger.error("Error '%s' while reading configuration file" % str(e))  
+    return None
 
   try:
-    handler_config.dump()
-  
     zip_handler = ZipHandler(handler_config)
-    zip_handler.create_zip_file()
+    latest_timestamp = zip_handler.get_latest_timestamp()
+    zip_timestamp = zip_handler.get_zip_timestamp()
+    zip_required = latest_timestamp > zip_timestamp
   
   except Exception as e:
     
-    logger.error("Error '%s' while writing zip file" % str(e))  
-    
-  logger.info("terminate application")
+    logger.error("Error '%s' checking file status" % str(e))  
+    return None
+      
+  logger.info("Returning status 'zip required': %s" % str(zip_required))   
+  return zip_required
   
   
-
 def main():
   
   if len(sys.argv) == 2:  

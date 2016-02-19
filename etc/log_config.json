@@ -27,7 +27,7 @@
 
     "loggers": {
         "pyzipista": {
-            "level": "DEBUG",
+            "level": "INFO",
             "handlers": ["console", "file"],
             "propagate": 0
         },
@@ -38,6 +38,11 @@
         },
         "log": {
             "level": "INFO",
+            "handlers": ["console", "file"],
+            "propagate": 0
+        },
+        "config": {
+            "level": "DEBUG",
             "handlers": ["console", "file"],
             "propagate": 0
         },

@@ -1,3 +1,6 @@
+# coding: utf-8
+# This file is part of https://github.com/marcus67/pyzipista
+
 import config
 
 reload(config)
@@ -17,4 +20,3 @@ class ZipHandlerConfig(config.BaseConfig):
   def __init__(self):
 
     self.general = GeneralConfig()    
-
