@@ -171,7 +171,6 @@ class ZipHandler(object):
     
     
   def create_zip_file(self):
-    
     global logger
   
     app_name = self.config.general.app_name
@@ -244,20 +243,18 @@ def load_config_file_and_zip(config_filename):
   
   
 def load_config_file_and_check_zip_required(config_filename):
-  
   global logger
   
   latest_timestamp = None
   handler_config = None
   zip_required = False
-  
   logger.info("Start checking file status for '%s'" % config_filename)
+  
   try:
     config_handler = config.ConfigHandler(zip_handler_config.ZipHandlerConfig())
     handler_config = config_handler.read_config_file(config_filename)
   
   except Exception as e:
-    
     logger.error("Error '%s' while reading configuration file" % str(e))  
     return None
 
