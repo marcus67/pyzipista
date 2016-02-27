@@ -3,11 +3,18 @@
 
 import copy
 import string
-import ConfigParser
+import six
 
 import log
 
-reload(log)
+if six.PY2:
+	from ConfigParser import ConfigParser
+
+else:
+	from configparser import ConfigParser
+	from importlib import reload	
+
+reload(log)	
 
 global logger
 
@@ -77,12 +84,11 @@ class ConfigHandler(object):
 
 
   def read_config_file(self, filename):
-    
     global logger
     
     fmt = "reading configuration file '%s' for config '%s'"
     logger.info(fmt % (filename, type(self.config_template).__name__))
-    self.config_file = ConfigParser.ConfigParser()
+    self.config_file = ConfigParser()
     self.config_file.optionxform = str # make options case sensitive
     config = copy.deepcopy(self.config_template)
 

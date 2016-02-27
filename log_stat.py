@@ -14,7 +14,6 @@ def get_log_started():
   
   return g_log_started
   
-  
 def set_log_started(log_started):
   global g_log_started
   

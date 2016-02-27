@@ -9,7 +9,7 @@
 
 import zipfile
 import base64
-import StringIO
+import six
 import sys
 import os
 
@@ -24,40 +24,30 @@ mod_times=[
 def extract(path='.'):
 
   try:  
-
-    print "Decoding base64 encoded ZIP archive into string..."
+    print ("Decoding base64 encoded ZIP archive into string...")
     binary_zip_string = base64.b64decode(zip_string, '_&')
-    binary_zip_input = StringIO.StringIO(binary_zip_string)
-  
-    print "Opening string as ZIP file..."
+    binary_zip_input = six.BytesIO(binary_zip_string)
+    print ("Opening string as ZIP file...")
     zip_file = zipfile.ZipFile(binary_zip_input, "r")
-  
     zip_file.printdir()
-    
-    print "Extracting to directory '%s'..." %path
-    
+    print ("Extracting to directory '%s'..." % path)
     zip_file.extractall(path=path)
-    
-    print "All files successfully extracted into directory '%s'." % path
-    
+    print ("All files successfully extracted into directory '%s'." % path)
   
   except Exception as e:
-    
     sys.stderr.write("ERROR '%s' while extracting files!" % str(e))
     return
     
   try:
-    
-    print "Setting modification times..."
+    print ("Setting modification times...")
     
     for (filename, epoch) in mod_times:
       effective_path = os.path.join(path, filename)
       os.utime(effective_path, (epoch, epoch))
     
-    print "All timestamps successfully updated."
+    print ("All timestamps successfully updated.")
 
   except Exception as e:
-    
     sys.stderr.write("ERROR '%s' while updating modification times!" % str(e))
     return
         

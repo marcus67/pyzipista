@@ -1,8 +1,13 @@
 # coding: utf-8
 # This file is part of https://github.com/marcus67/pyzipista
 
+import platform
 import config
+import six
 
+if six.PY3:
+	from importlib import reload
+	
 reload(config)
 
 class GeneralConfig(config.BaseConfig):
